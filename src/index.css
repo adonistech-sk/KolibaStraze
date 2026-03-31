@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&subset=latin-ext&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #fbf8f3;
+  --color-brand-100: #f5eedf;
+  --color-brand-200: #ead8be;
+  --color-brand-300: #ddbc94;
+  --color-brand-400: #d19a64;
+  --color-brand-500: #c77b3b;
+  --color-brand-600: #b96030;
+  --color-brand-700: #9a4829;
+  --color-brand-800: #7d3b25;
+  --color-brand-900: #663221;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-brand-50);
+    color: #1f2937;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+  }
+}
