@@ -206,9 +206,11 @@ const SK_MONTHS = [
   'Júl', 'August', 'September', 'Október', 'November', 'December',
 ];
 const TIME_SLOTS = [
-  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-  '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
+  '9:00', '9:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
+  '21:00', '21:30', '22:00',
 ];
 
 const getDaysGrid = (year, month) => {
@@ -1353,13 +1355,6 @@ export default function App() {
                 <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
                 +421 918 909 302
               </a>
-              <a
-                href="tel:+421915951200"
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-3 px-3 sm:px-8 py-2.5 sm:py-4 md:py-5 text-sm sm:text-lg md:text-xl font-medium sm:font-bold text-white bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 rounded-full transition-all hover:scale-105 active:scale-95 duration-300"
-              >
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
-                +421 915 951 200
-              </a>
             </div>
           </FadeIn>
 
@@ -1388,7 +1383,7 @@ export default function App() {
             {[
               {
                 q: 'Treba si rezervovať stôl vopred?',
-                a: 'Rezervácia nie je povinná, ale odporúčame ju najmä cez víkendy a sviatky, aby sme vám zabezpečili miesto. Zavolajte nám na +421 918 909 302 alebo +421 915 951 200.',
+                a: 'Rezervácia nie je povinná, ale odporúčame ju najmä cez víkendy a sviatky, aby sme vám zabezpečili miesto. Zavolajte nám na +421 918 909 302.',
               },
               {
                 q: 'Máte vegetariánske možnosti?',
@@ -1404,7 +1399,7 @@ export default function App() {
               },
               {
                 q: 'Ponúkate rozvoz jedál?',
-                a: 'Áno, zabezpečujeme rozvoz menu. Pre objednávku zavolajte na +421 915 951 200.',
+                a: 'Áno, zabezpečujeme rozvoz menu. Pre objednávku zavolajte na +421 918 909 302.',
               },
             ].map((faq, i) => (
               <FadeIn key={i} delay={i * 0.08}>
@@ -1543,9 +1538,6 @@ export default function App() {
                       <p className="text-sm sm:text-base font-medium text-brand-900">Telefón</p>
                       <p className="text-sm sm:text-base text-gray-600">
                         <a href="tel:+421918909302" className="hover:text-brand-600 transition-colors">+421 918 909 302</a>
-                        <span className="hidden sm:inline">{' / '}</span>
-                        <br className="sm:hidden" />
-                        <a href="tel:+421915951200" className="hover:text-brand-600 transition-colors">+421 915 951 200</a>
                       </p>
                     </div>
                   </div>
@@ -1626,12 +1618,6 @@ export default function App() {
                   <a href="tel:+421918909302" className="flex items-center gap-2.5 text-brand-300 hover:text-brand-400 transition-colors">
                     <Phone size={15} className="text-brand-400" />
                     +421 918 909 302
-                  </a>
-                </li>
-                <li>
-                  <a href="tel:+421915951200" className="flex items-center gap-2.5 text-brand-300 hover:text-brand-400 transition-colors">
-                    <Phone size={15} className="text-brand-400" />
-                    +421 915 951 200
                   </a>
                 </li>
                 <li>
