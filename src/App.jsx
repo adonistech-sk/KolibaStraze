@@ -425,7 +425,7 @@ const ReservationModal = ({ isOpen, onClose }) => {
         phone: form.phone,
         email: form.email,
         note: form.note || 'Žiadna poznámka',
-        date: `${selectedDate.day}. ${SK_MONTHS[selectedDate.month]} ${selectedDate.year}`,
+        date: selectedDate ? `${selectedDate.getDate()}. ${SK_MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}` : '',
         time: selectedTime,
         guests: personCount,
       }, 'pADG4TpypCL2zqNdn');
