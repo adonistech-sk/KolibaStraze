@@ -1001,9 +1001,10 @@ export default function App() {
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
-            src="/hero.png"
+            src="/hero.webp"
             alt="Interiér Koliby Pacho"
             className="w-full h-full object-cover"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-brand-900/80 via-brand-900/60 to-brand-900/90" />
         </div>
@@ -1164,7 +1165,7 @@ export default function App() {
       <section id="jedalny-listok" className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0">
-          <img src="/food.png" alt="" className="w-full h-full object-cover" aria-hidden="true" />
+          <img src="/food.webp" alt="" className="w-full h-full object-cover" aria-hidden="true" loading="lazy" />
           <div className="absolute inset-0 bg-brand-900/88" />
         </div>
 
@@ -1275,6 +1276,7 @@ export default function App() {
                     <img
                       src={item.src}
                       alt={item.alt}
+                      loading="lazy"
                       className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${item.enhance ? 'contrast-[1.15] saturate-[1.2] brightness-[0.92]' : ''}`}
                     />
                   ) : (
