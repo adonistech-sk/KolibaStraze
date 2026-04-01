@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import emailjs from '@emailjs/browser';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone,
@@ -329,9 +330,9 @@ const MenuModal = ({ isOpen, onClose }) => {
               {/* PDF viewer */}
               <div className="flex-1 min-h-0 bg-gray-100">
                 <iframe
-                  key={activeSection}
+                  key={`${activeSection}-${Date.now()}`}
                   ref={iframeRef}
-                  src={`${MENU_PDF_URL}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0&zoom=50`}
+                  src={`${MENU_PDF_URL}?t=${activeSection}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0&zoom=50`}
                   className="w-full h-full sm:h-[72vh]"
                   title="Jedálny lístok Koliba Stráže"
                 />
@@ -415,13 +416,25 @@ const ReservationModal = ({ isOpen, onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep2()) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await emailjs.send('service_2q5rpb9', 'template_94gmcgs', {
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        note: form.note || 'Žiadna poznámka',
+        date: `${selectedDate.day}. ${SK_MONTHS[selectedDate.month]} ${selectedDate.year}`,
+        time: selectedTime,
+        guests: personCount,
+      }, 'pADG4TpypCL2zqNdn');
       setStep(3);
-    }, 1500);
+    } catch {
+      alert('Nepodarilo sa odoslať rezerváciu. Skúste to prosím znova alebo nás kontaktujte telefonicky.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputClass = (field) =>
@@ -795,6 +808,7 @@ export default function App() {
   const [reservationOpen, setReservationOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -811,8 +825,8 @@ export default function App() {
   ];
 
   const handleNav = (id) => {
-    scrollTo(id);
     setMobileMenuOpen(false);
+    setTimeout(() => scrollTo(id), 350);
   };
 
   return (
@@ -1192,7 +1206,10 @@ export default function App() {
               { src: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/Screenshot%202026-03-29%20172812.webp', alt: 'Detaily interiéru' },
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 0.08} className={item.streetView ? 'hidden md:block' : item.mobileOnly ? 'md:hidden' : ''}>
-                <div className={`rounded-2xl overflow-hidden aspect-[4/3] bg-brand-200 relative ${item.streetView ? '' : 'group cursor-pointer'}`}>
+                <div
+                  className={`rounded-2xl overflow-hidden aspect-[4/3] bg-brand-200 relative ${item.streetView ? '' : 'group cursor-pointer'}`}
+                  onClick={() => item.src && setLightboxImg(item)}
+                >
                   {item.streetView ? (
                     <iframe
                       src="https://www.google.com/maps/embed?pb=!4v1!6m8!1m7!1sCIHM0ogKEICAgIDe882RmQE!2m2!1d48.5864204!2d19.0906613!3f90!4f0!5f0.4000000059604645"
@@ -1435,56 +1452,57 @@ export default function App() {
               <div>
                 {/* Opening Hours */}
                 <div className="mb-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-10 w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center">
-                      <Clock size={20} />
+                  <div className="flex items-center gap-2.5 sm:gap-3 mb-5 sm:mb-6">
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <h3 className="text-xl font-bold text-brand-900">Otváracie hodiny</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-brand-900">Otváracie hodiny</h3>
                   </div>
                   <div className="space-y-0">
                     {[
                       { day: 'Pondelok – Piatok', time: '9:00 – 20:00' },
                       { day: 'Sobota – Nedeľa', time: '10:00 – 20:00' },
                     ].map((row, i) => (
-                      <div key={i} className="flex justify-between py-4 border-b border-brand-100">
-                        <span className="text-gray-700 font-medium">{row.day}</span>
-                        <span className="text-brand-600 font-bold">{row.time}</span>
+                      <div key={i} className="flex justify-between py-3 sm:py-4 border-b border-brand-100">
+                        <span className="text-sm sm:text-base text-gray-700 font-medium">{row.day}</span>
+                        <span className="text-sm sm:text-base text-brand-600 font-bold">{row.time}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Contact Details */}
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <MapPin size={20} />
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-start gap-2.5 sm:gap-3">
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-brand-900">Adresa</p>
-                      <p className="text-gray-600">Stráž 2189/5, 960 01 Zvolen</p>
+                      <p className="text-sm sm:text-base font-medium text-brand-900">Adresa</p>
+                      <p className="text-sm sm:text-base text-gray-600">Stráž 2189/5, 960 01 Zvolen</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Phone size={20} />
+                  <div className="flex items-start gap-2.5 sm:gap-3">
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-brand-900">Telefón</p>
-                      <p className="text-gray-600">
+                      <p className="text-sm sm:text-base font-medium text-brand-900">Telefón</p>
+                      <p className="text-sm sm:text-base text-gray-600">
                         <a href="tel:+421918909302" className="hover:text-brand-600 transition-colors">+421 918 909 302</a>
-                        {' / '}
+                        <span className="hidden sm:inline">{' / '}</span>
+                        <br className="sm:hidden" />
                         <a href="tel:+421915951200" className="hover:text-brand-600 transition-colors">+421 915 951 200</a>
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Mail size={20} />
+                  <div className="flex items-start gap-2.5 sm:gap-3">
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-brand-900">E-mail</p>
-                      <a href="mailto:strazekoliba@gmail.com" className="text-brand-600 hover:text-brand-800 transition-colors">
+                      <p className="text-sm sm:text-base font-medium text-brand-900">E-mail</p>
+                      <a href="mailto:strazekoliba@gmail.com" className="text-sm sm:text-base text-brand-600 hover:text-brand-800 transition-colors break-all sm:break-normal">
                         strazekoliba@gmail.com
                       </a>
                     </div>
@@ -1495,12 +1513,11 @@ export default function App() {
 
             {/* Map */}
             <FadeIn direction="left">
-              <div className="rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-video lg:aspect-auto lg:h-full min-h-[280px] sm:min-h-[320px] bg-brand-100 shadow-lg">
+              <div className="rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-video lg:aspect-auto lg:h-full min-h-[220px] sm:min-h-[320px] bg-brand-100 shadow-lg">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1318.5!2d19.0904767!3d48.5864204!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471539d9bf262237%3A0x248b55a2426f3e42!2sMotorest%20Koliba%20Str%C3%A1%C5%BEe!5e0!3m2!1ssk!2ssk!4v1"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0, minHeight: '320px' }}
+                  className="w-full h-full min-h-[240px] sm:min-h-[320px]"
+                  style={{ border: 0 }}
                   allowFullScreen=""
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -1575,18 +1592,65 @@ export default function App() {
           </div>
 
           {/* Bottom bar */}
-          <div className="pt-5 border-t border-brand-800/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-brand-400/60">
-            <p>&copy; {new Date().getFullYear()} Koliba Stráže. Vytvorené <a href="https://adonistech.sk" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-white transition-colors">AdonisTech</a></p>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center gap-1.5 text-brand-400/60 hover:text-brand-400 transition-colors cursor-pointer"
-            >
-              <ChevronDown size={14} className="rotate-180" />
-              Späť nahor
-            </button>
+          <div className="pt-5 border-t border-brand-800/50 flex flex-col items-center gap-4 text-xs text-brand-400/60">
+            <p className="text-sm text-brand-300">
+              Vytvorené{' '}
+              <a href="https://adonistech.sk" target="_blank" rel="noopener noreferrer" className="text-white font-semibold hover:text-brand-400 transition-colors">
+                AdonisTech
+              </a>
+            </p>
+            <div className="flex items-center justify-between w-full">
+              <p>&copy; {new Date().getFullYear()} Koliba Stráže. Všetky práva vyhradené.</p>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center gap-1.5 text-brand-400/60 hover:text-brand-400 transition-colors cursor-pointer"
+              >
+                <ChevronDown size={14} className="rotate-180" />
+                Späť nahor
+              </button>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxImg && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLightboxImg(null)}
+            />
+            <motion.div
+              className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLightboxImg(null)}
+            >
+              <motion.img
+                src={lightboxImg.src}
+                alt={lightboxImg.alt}
+                className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+              />
+              <button
+                onClick={() => setLightboxImg(null)}
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                aria-label="Zavrieť"
+              >
+                <X size={24} />
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <MenuModal isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
       <ReservationModal isOpen={reservationOpen} onClose={() => setReservationOpen(false)} />
