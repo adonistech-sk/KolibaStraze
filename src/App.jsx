@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import emailjs from '@emailjs/browser';
+import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone,
@@ -29,6 +30,12 @@ import {
   Loader2,
   Download
 } from 'lucide-react';
+
+/* ─── Supabase Client ─── */
+const supabase = createClient(
+  'https://tujyafqceszycuzyegyp.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1anlhZnFjZXN6eWN1enllZ3lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDY2MTcsImV4cCI6MjA5MDYyMjYxN30.7KMsId2iY42vk-_4ZzrpSplMopTFnMAL-40giFLpn_k'
+);
 
 /* ─── Reusable Components ─── */
 const FadeIn = ({ children, delay = 0, direction = 'up', className = '' }) => {
@@ -239,6 +246,7 @@ const MENU_SECTIONS = [
 
 const MenuModal = ({ isOpen, onClose }) => {
   const [activeSection, setActiveSection] = useState(0);
+  const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = React.useRef(null);
 
   useEffect(() => {
@@ -253,6 +261,7 @@ const MenuModal = ({ isOpen, onClose }) => {
 
   const goToPage = (index) => {
     setActiveSection(index);
+    setIframeKey((k) => k + 1);
   };
 
   return (
@@ -330,9 +339,9 @@ const MenuModal = ({ isOpen, onClose }) => {
               {/* PDF viewer */}
               <div className="flex-1 min-h-0 bg-gray-100">
                 <iframe
-                  key={`${activeSection}-${Date.now()}`}
+                  key={iframeKey}
                   ref={iframeRef}
-                  src={`${MENU_PDF_URL}?t=${activeSection}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0&zoom=50`}
+                  src={`${MENU_PDF_URL}?t=${iframeKey}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0&zoom=50`}
                   className="w-full h-full sm:h-[72vh]"
                   title="Jedálny lístok Koliba Stráže"
                 />
@@ -371,6 +380,7 @@ const ReservationModal = ({ isOpen, onClose }) => {
   const [form, setForm] = useState({ name: '', phone: '', email: '', note: '' });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -380,6 +390,21 @@ const ReservationModal = ({ isOpen, onClose }) => {
     }
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!selectedDate) {
+      setBookedSlots([]);
+      return;
+    }
+    const dateStr = formatDate(selectedDate);
+    supabase
+      .from('reservations')
+      .select('reservation_time')
+      .eq('reservation_date', dateStr)
+      .then(({ data }) => {
+        setBookedSlots(data ? data.map((r) => r.reservation_time) : []);
+      });
+  }, [selectedDate]);
 
   const reset = () => {
     setStep(1);
@@ -429,6 +454,16 @@ const ReservationModal = ({ isOpen, onClose }) => {
         time: selectedTime,
         guests: personCount,
       }, 'pADG4TpypCL2zqNdn');
+
+      await supabase.from('reservations').insert({
+        reservation_date: formatDate(selectedDate),
+        reservation_time: selectedTime,
+        guest_name: form.name,
+        guest_email: form.email,
+        guest_phone: form.phone,
+        guest_count: personCount,
+      });
+
       setStep(3);
     } catch {
       alert('Nepodarilo sa odoslať rezerváciu. Skúste to prosím znova alebo nás kontaktujte telefonicky.');
@@ -578,19 +613,25 @@ const ReservationModal = ({ isOpen, onClose }) => {
                         </div>
                         {selectedDate ? (
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {TIME_SLOTS.map((time) => (
+                            {TIME_SLOTS.map((time) => {
+                              const booked = bookedSlots.includes(time);
+                              return (
                               <button
                                 key={time}
+                                disabled={booked}
                                 onClick={() => setSelectedTime(time)}
                                 className={`py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150
-                                  ${selectedTime === time
-                                    ? 'bg-brand-500 text-white shadow-md'
-                                    : 'bg-brand-50 border border-brand-200 text-brand-700 hover:bg-brand-100 hover:border-brand-300'
+                                  ${booked
+                                    ? 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed line-through'
+                                    : selectedTime === time
+                                      ? 'bg-brand-500 text-white shadow-md'
+                                      : 'bg-brand-50 border border-brand-200 text-brand-700 hover:bg-brand-100 hover:border-brand-300'
                                   }`}
                               >
-                                {time}
+                                {booked ? `${time} – Obsadené` : time}
                               </button>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <p className="text-sm text-gray-400 italic text-center py-4 bg-brand-50 rounded-xl">
@@ -809,6 +850,16 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [lightboxImg, setLightboxImg] = useState(null);
+  const [cookieConsent, setCookieConsent] = useState(() => localStorage.getItem('cookieConsent'));
+
+  const acceptCookies = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    setCookieConsent('accepted');
+  };
+  const declineCookies = () => {
+    localStorage.setItem('cookieConsent', 'declined');
+    setCookieConsent('declined');
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -1654,6 +1705,39 @@ export default function App() {
 
       <MenuModal isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
       <ReservationModal isOpen={reservationOpen} onClose={() => setReservationOpen(false)} />
+
+      {/* Cookie Consent Banner */}
+      <AnimatePresence>
+        {!cookieConsent && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6"
+          >
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl border border-brand-100 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <p className="text-sm text-gray-700 flex-1">
+                Táto webová stránka používa cookies na zlepšenie vášho zážitku z prehliadania. Používaním našej stránky súhlasíte s ich používaním.
+              </p>
+              <div className="flex gap-3 flex-shrink-0">
+                <button
+                  onClick={declineCookies}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Odmietnuť
+                </button>
+                <button
+                  onClick={acceptCookies}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 transition-colors cursor-pointer"
+                >
+                  Súhlasím
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
