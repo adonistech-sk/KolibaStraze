@@ -67,23 +67,17 @@ const OrderOnlineButton = () => {
   const platforms = [
     {
       name: 'Wolt',
-      accent: '#009DE0',
-      bg: 'bg-[#009DE0]',
-      hoverBg: 'group-hover:bg-[#007ab8]',
+      icon: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/400x400bb-75%20(2)%20(1).webp',
       url: 'https://wolt.com/sk/svk/zvolen/restaurant/koliba-straze-nad-zvolenom',
     },
     {
       name: 'Bolt Food',
-      accent: '#34D186',
-      bg: 'bg-[#34D186]',
-      hoverBg: 'group-hover:bg-[#2ab872]',
+      icon: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/400x400bb-75%20(4).jpg',
       url: 'https://food.bolt.eu/en/1188-zvolen/p/108984-koliba-straze-nad-zvolenom/',
     },
     {
       name: 'Bistro',
-      accent: '#E63946',
-      bg: 'bg-[#E63946]',
-      hoverBg: 'group-hover:bg-[#cc2f3b]',
+      icon: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/400x400bb-75%20(3).webp',
       url: 'https://www.bistro.sk/restauracia/koliba-straze',
     },
   ];
@@ -133,8 +127,8 @@ const OrderOnlineButton = () => {
                       transition={{ delay: i * 0.06, duration: 0.2 }}
                       className="group flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white/8 hover:bg-white/15 border border-white/10 hover:border-white/20 transition-all duration-200 active:scale-[0.98]"
                     >
-                      <div className={`h-9 w-9 rounded-lg ${platform.bg} ${platform.hoverBg} flex items-center justify-center transition-colors shadow-md`}>
-                        <span className="text-white text-sm font-bold">{platform.name[0]}</span>
+                      <div className="h-9 w-9 rounded-lg overflow-hidden shadow-md flex-shrink-0">
+                        <img src={platform.icon} alt={platform.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <span className="text-white text-sm font-semibold block leading-tight">{platform.name}</span>
@@ -1002,12 +996,18 @@ export default function App() {
       <section id="domov" className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
-          <img
-            src="/hero.webp"
-            alt="Interiér Koliby Pacho"
-            className="w-full h-full object-cover"
-            fetchPriority="high"
-          />
+          <picture>
+            <source
+              media="(max-width: 639px)"
+              srcSet="https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/d.webp"
+            />
+            <img
+              src="https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/Gemini_Generated_Image_slj087slj087slj0ee.webp"
+              alt="Interiér Koliby Pacho"
+              className="w-full h-full object-cover"
+              fetchPriority="high"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-brand-900/80 via-brand-900/60 to-brand-900/90" />
         </div>
 
@@ -1031,8 +1031,39 @@ export default function App() {
             </p>
           </FadeIn>
           <FadeIn delay={0.3}>
-            <div className="flex flex-row flex-wrap gap-2 sm:gap-4 justify-center items-center">
-              <OrderOnlineButton />
+            <div className="flex flex-row flex-wrap gap-2 sm:gap-4 justify-center items-start">
+              <div className="flex flex-col items-center gap-3">
+                <OrderOnlineButton />
+                <div className="flex flex-row gap-2 sm:gap-3">
+                  <a
+                    href="https://wolt.com/sk/svk/zvolen/restaurant/koliba-straze-nad-zvolenom"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Objednať cez Wolt"
+                    className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl overflow-hidden shadow-lg hover:scale-110 transition-transform"
+                  >
+                    <img src="https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/400x400bb-75%20(2)%20(1).webp" alt="Wolt" className="w-full h-full object-cover" />
+                  </a>
+                  <a
+                    href="https://food.bolt.eu/en/1188-zvolen/p/108984-koliba-straze-nad-zvolenom/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Objednať cez Bolt Food"
+                    className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl overflow-hidden shadow-lg hover:scale-110 transition-transform"
+                  >
+                    <img src="https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/400x400bb-75%20(4).jpg" alt="Bolt Food" className="w-full h-full object-cover" />
+                  </a>
+                  <a
+                    href="https://www.bistro.sk/restauracia/koliba-straze"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Objednať cez Bistro"
+                    className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl overflow-hidden shadow-lg hover:scale-110 transition-transform"
+                  >
+                    <img src="https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/400x400bb-75%20(3).webp" alt="Bistro" className="w-full h-full object-cover" />
+                  </a>
+                </div>
+              </div>
               <button
                 onClick={() => scrollTo('jedalny-listok')}
                 className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-5 sm:px-6 md:px-8 py-3.5 sm:py-3.5 md:py-4 text-sm sm:text-base md:text-lg font-medium text-white bg-white/10 backdrop-blur-sm border border-white/25 hover:bg-white/20 rounded-full transition-all hover:-translate-y-1"
@@ -1252,7 +1283,7 @@ export default function App() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {[
               { src: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/Screenshot%202026-03-29%20175118.webp', alt: 'Interiér koliby', enhance: true },
-              { src: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/title-1024x683.webp', alt: 'Koliba Stráže' },
+              { src: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/IMG_4128.webp', alt: 'Koliba Stráže' },
               { streetView: true, alt: '360° Virtuálna prehliadka' },
               { src: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/koliba-interier-slide.webp', alt: 'Interiér koliby', mobileOnly: true },
               { src: 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/Screenshot%202026-03-29%20173439.webp', alt: 'Exteriér koliby' },
@@ -1508,8 +1539,8 @@ export default function App() {
                   </div>
                   <div className="space-y-0">
                     {[
-                      { day: 'Pondelok – Piatok', time: '9:00 – 20:00' },
-                      { day: 'Sobota – Nedeľa', time: '10:00 – 20:00' },
+                      { day: 'Pondelok – Piatok', time: '9:00 – 19:00' },
+                      { day: 'Sobota – Nedeľa', time: '10:00 – 19:00' },
                     ].map((row, i) => (
                       <div key={i} className="flex justify-between py-3 sm:py-4 border-b border-brand-100">
                         <span className="text-sm sm:text-base text-gray-700 font-medium">{row.day}</span>
