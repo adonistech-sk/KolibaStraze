@@ -229,7 +229,7 @@ const isPast = (day, month, year) => {
 };
 
 /* ─── Menu Modal ─── */
-const MENU_PDF_URL = 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/jedalny%20listok.pdf';
+const MENU_PDF_URL = 'https://ridbtuorcmkjidenxudx.supabase.co/storage/v1/object/public/Koliba%20Straze/jedalny%20listok%202.pdf';
 
 const MENU_SECTIONS = [
   { label: 'Denná ponuka', page: 1, icon: '🍲' },
@@ -337,7 +337,7 @@ const MenuModal = ({ isOpen, onClose }) => {
                 <iframe
                   key={iframeKey}
                   ref={iframeRef}
-                  src={`${MENU_PDF_URL}?t=${iframeKey}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0&zoom=50`}
+                  src={`${MENU_PDF_URL}?v=${iframeKey}&p=${MENU_SECTIONS[activeSection].page}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0`}
                   className="w-full h-full sm:h-[72vh]"
                   title="Jedálny lístok Koliba Stráže"
                 />
