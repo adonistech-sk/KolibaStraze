@@ -244,6 +244,16 @@ const MenuModal = ({ isOpen, onClose }) => {
   const [activeSection, setActiveSection] = useState(0);
   const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = React.useRef(null);
+  const canvasContainerRef = React.useRef(null);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -251,9 +261,54 @@ const MenuModal = ({ isOpen, onClose }) => {
       setActiveSection(0);
     } else {
       document.body.style.overflow = '';
+      setPdfDoc(null);
     }
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !isMobile) return;
+    let cancelled = false;
+    import('pdfjs-dist').then(async (pdfjsLib) => {
+      const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = worker.default;
+      return pdfjsLib.getDocument(MENU_PDF_URL).promise;
+    }).then((doc) => {
+      if (!cancelled) setPdfDoc(doc);
+    });
+    return () => { cancelled = true; };
+  }, [isOpen, isMobile]);
+
+  useEffect(() => {
+    if (!pdfDoc || !isMobile || !canvasContainerRef.current) return;
+    const container = canvasContainerRef.current;
+    container.innerHTML = '';
+
+    const startPage = MENU_SECTIONS[activeSection].page;
+    const endPage = activeSection < MENU_SECTIONS.length - 1
+      ? MENU_SECTIONS[activeSection + 1].page - 1
+      : pdfDoc.numPages;
+
+    let cancelled = false;
+    (async () => {
+      for (let i = startPage; i <= endPage; i++) {
+        if (cancelled) return;
+        const page = await pdfDoc.getPage(i);
+        const dpr = window.devicePixelRatio || 1;
+        const scale = (container.clientWidth / page.getViewport({ scale: 1 }).width) * dpr;
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = '100%';
+        canvas.style.display = 'block';
+        container.appendChild(canvas);
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      }
+    })();
+    container.scrollTop = 0;
+    return () => { cancelled = true; };
+  }, [pdfDoc, activeSection, isMobile]);
 
   const goToPage = (index) => {
     setActiveSection(index);
@@ -334,12 +389,18 @@ const MenuModal = ({ isOpen, onClose }) => {
 
               {/* PDF viewer */}
               <div className="flex-1 min-h-0 bg-gray-100">
+                {/* Desktop: iframe with page navigation */}
                 <iframe
                   key={iframeKey}
                   ref={iframeRef}
-                  src={`${MENU_PDF_URL}?v=${iframeKey}&p=${MENU_SECTIONS[activeSection].page}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0`}
-                  className="w-full h-full sm:h-[72vh]"
+                  src={`${MENU_PDF_URL}?v=${iframeKey}#page=${MENU_SECTIONS[activeSection].page}&toolbar=0&navpanes=0&scrollbar=0&statusbar=0`}
+                  className="hidden sm:block w-full h-[72vh]"
                   title="Jedálny lístok Koliba Stráže"
+                />
+                {/* Mobile: PDF.js canvas rendering */}
+                <div
+                  ref={canvasContainerRef}
+                  className="sm:hidden w-full h-full overflow-y-auto"
                 />
               </div>
 

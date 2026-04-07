@@ -11,6 +11,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('framer-motion')) return 'framer-motion';
           if (id.includes('@supabase')) return 'supabase';
+          if (id.includes('pdfjs-dist')) return 'pdfjs';
         },
       },
     },
